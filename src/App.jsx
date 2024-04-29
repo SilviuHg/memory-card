@@ -1,35 +1,63 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import "./App.css";
+import { useEffect, useState } from "react";
+import Card from "./Card";
+import TrackScore from "./Score";
+
+const pokemonArray = [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 37, 39];
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [pokemonList, setPokemonList] = useState([]);
+  const [count, setCount] = useState(0);
+  const [bestScore, setBestScore] = useState(0);
+
+  function handlePokemonList(value) {
+    setPokemonList(value);
+  }
+
+  function handleCount(value) {
+    setCount(value);
+  }
+
+  function handleBestScore(value) {
+    setBestScore(value);
+  }
+
+  // call api to get pokemon data
+  const getPokemon = async function (id) {
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`, {
+      mode: "cors",
+    });
+    const pokemonData = await response.json();
+    return pokemonData;
+  };
+
+  useEffect(() => {
+    // fetch all pokemons and store them in state
+    const fetchPokemonData = async () => {
+      const newPokemonList = [];
+      for (let i = 0; i < pokemonArray.length; i++) {
+        const pokemonData = await getPokemon(pokemonArray[i]);
+        newPokemonList.push(pokemonData);
+      }
+      handlePokemonList(newPokemonList);
+    };
+
+    fetchPokemonData();
+  }, []);
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <TrackScore count={count} bestScore={bestScore} />
+      <Card
+        itemsArray={pokemonList}
+        count={count}
+        bestScore={bestScore}
+        handlePokemonsArray={handlePokemonList}
+        handleCount={handleCount}
+        handleBestScore={handleBestScore}
+      />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
